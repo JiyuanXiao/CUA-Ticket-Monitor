@@ -1,6 +1,8 @@
+import time
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 
 class cuaMonitor:
@@ -16,7 +18,7 @@ class cuaMonitor:
             phone_number_input = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, f"//input[@placeholder='{phone_num_placeholder_value}']")))
             phone_number_input.send_keys(phone_number)
         except TimeoutException:
-            print("ERROR: Phone Number Input Element Not Founded After Waiting...")
+            print("ERROR: Phone Number Input Element Not Found After Waiting...")
             exit()
 
     # Mark check on login agreements 
@@ -26,7 +28,7 @@ class cuaMonitor:
             login_agrees = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, f"//div[@class='{login_agrees_class_value}']")))
             login_agrees.click()
         except TimeoutException:
-            print("ERROR: Login Agreement Check Button Not Founded")
+            print("ERROR: Login Agreement Check Button Not Found")
             exit()
 
     # Ask user for picture verification code
@@ -37,7 +39,7 @@ class cuaMonitor:
             picture_verification_code_input = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, f"//input[@placeholder='{picture_verification_code_placeholder_value}']")))
             picture_verification_code_input.send_keys(picture_verification_code)
         except TimeoutException:
-            print("ERROR: Picture Verification Code Input Slot Not Founded")
+            print("ERROR: Picture Verification Code Input Slot Not Found")
             exit()
 
     # Click Send SMS code button
@@ -48,7 +50,7 @@ class cuaMonitor:
             get_code.click()
             print("\n短信验证码已发出...")
         except TimeoutException:
-            print("ERROR: Get SMS Code Button Not Founded")
+            print("ERROR: Get SMS Code Button Not Found")
             exit()
 
     # Ask user for SMS verification code
@@ -59,7 +61,7 @@ class cuaMonitor:
             sms_verification_code_input = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, f"//input[@placeholder='{sms_verification_code_placeholder_value}']")))
             sms_verification_code_input.send_keys(sms_verification_code)
         except TimeoutException:
-            print("ERROR: SMS Verification Code Input Slot Not Founded")
+            print("ERROR: SMS Verification Code Input Slot Not Found")
             exit()
 
     # Click login
@@ -69,7 +71,7 @@ class cuaMonitor:
             login = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, f"//div[@class='{login_class_value}']")))
             login.click()
         except TimeoutException:
-            print("ERROR: Login Button Not Founded")
+            print("ERROR: Login Button Not Found")
             exit()
 
     # Click Close Ad
@@ -79,7 +81,7 @@ class cuaMonitor:
             close_ad = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, f"//div[@class='{close_ad_class_value}']")))
             close_ad.click()
         except TimeoutException:
-            print("ERROR: Close Ad Button Not Founded")
+            print("ERROR: Close Ad Button Not Found")
             exit()
 
     def clickMy(self, wait_time) -> None:
@@ -88,7 +90,7 @@ class cuaMonitor:
             my = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, f"//a[@href='{my_href_value}']")))
             my.click()
         except TimeoutException:
-            print("ERROR: 'My' Button Not Founded")
+            print("ERROR: 'My' Button Not Found")
             exit()
 
     # Click 盲合
@@ -98,7 +100,7 @@ class cuaMonitor:
             blind_box = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, f"//div/div/img[@src='{blind_box_icon_src}']")))
             blind_box.click()
         except TimeoutException:
-            print("ERROR: 盲合 Button Not Founded")
+            print("ERROR: 盲合 Button Not Found")
             exit()
 
     # Click 兑换
@@ -106,30 +108,86 @@ class cuaMonitor:
         redeem_class_value = "css-1rynq56 r-dnmrzs r-1udh08x r-1udbk01 r-3s2u2q r-1iln25a r-jwli3a r-191d75d r-1enofrn"
         try:
             redeem = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, f"//div[@class='{redeem_class_value}']")))
-            print(redeem.get_attribute("outerHTML"))
-            print("\n")
-            redeem.click()
+            #action = ActionChains(self.web_driver)
+            #action.move_to_element_with_offset(redeem, -20, 0).click().perform()
+            self.web_driver.execute_script("arguments[0].click();", redeem)
         except TimeoutException:
-            print("ERROR: 兑换 Button Not Founded")
+            print("ERROR: 兑换 Button Not Found")
             exit()
 
     # Choose departure city
-    def chooseCities(self, wait_time) -> None:
-        departure_class_value = "css-1rynq56"
+    def chooseDepartureCity(self, city, wait_time) -> None:
+        city_style_value = "flex-flow: row; justify-content: flex-start; align-items: center; height: 44px; padding-right: 12px; padding-left: 12px;"
         try:
-            elemets = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_all_elements_located((By.XPATH, f"//div[@class='{departure_class_value}']")))
-            for ele in elemets:
-                print(ele.get_attribute("outerHTML"))
-                print("\n")
-            elemets[0].click()
+            departure = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, "//div[text()='选择出发城市']")))
+            departure.click()
         except TimeoutException:
-            print("ERROR: Elements Not Founded")
+            print("ERROR:  选择出发城市 Not Found")
             exit()
+
+        try:
+            departure_city = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, f"//div[@style='{city_style_value}']/div[text()='{city}']")))
+            departure_city.click()
+        except TimeoutException:
+            print(f"ERROR:  {city} Not Found")
+            exit()
+
+    # Choose arrival city
+    def chooseArrivalCity(self, city, wait_time) -> None:
+        city_style_value = "flex-flow: row; justify-content: flex-start; align-items: center; height: 44px; padding-right: 12px; padding-left: 12px;"
+        try:
+            arrival = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, "//div[text()='选择到达城市']")))
+            arrival.click()
+        except TimeoutException:
+            print("ERROR:  选择到达城市 Not Found")
+            exit()
+
+        try:
+            arrival_city = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, f"//div[@style='{city_style_value}']/div[text()='{city}']")))
+            arrival_city.click()
+        except TimeoutException:
+            print(f"ERROR:  {city} Not Found")
+            exit()
+
+    def chooseDepartureTime(self, wait_time) -> None:
+        try:
+            departure = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, "//div[text()='选择去程日期']")))
+            departure.click()
+        except TimeoutException:
+            print("ERROR:  选择去程日期 Not Found")
+            exit()
+
+        class_value = "css-175oi2r r-1i6wzkk r-lrvibr r-1loqt21 r-1otgn73 r-1awozwy r-1kihuf0 r-6koalj r-1777fci r-bnwqim r-pcwgik r-1xfd6ze r-uxrrfj r-2tyz2o r-jwli3a"
+        try:
+            departure_time = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, f"//div[@class='{class_value}']/div[text()='出发']")))
+            #action = ActionChains(self.web_driver)
+            #action.move_to_element_with_offset(departure_time, 0, -20).click().perform()
+            #departure_time.click()
+            self.web_driver.execute_script("arguments[0].click();", departure_time)
+        except TimeoutException:
+            print("ERROR:  出发 Not Found")
+            exit()
+
+    def tryClickArrivalTime(self, wait_time) -> bool:
+        try:
+            departure = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, "//div[text()='选择返程日期']")))
+            departure.click()
+        except TimeoutException:
+            print("ERROR:  选择返程日期 Not Found")
+            exit()
+
+        class_value = "css-175oi2r r-1i6wzkk r-lrvibr r-1loqt21 r-1otgn73 r-1awozwy r-1kihuf0 r-6koalj r-1777fci r-bnwqim r-pcwgik r-1xfd6ze r-uxrrfj r-2tyz2o r-jwli3a"
+        try:
+            departure_time = self.web_driver.find_element(By.XPATH, f"//div[@class='{class_value}']/div[text()='返程']")
+            departure_time.click()
+            return True
+        except NoSuchElementException:
+            return False
 
     def isLogin(self) -> bool:
         login_status_text = "未登录"
         try:
-            WebDriverWait(self.web_driver, 5).until( EC.presence_of_element_located((By.XPATH, f"//div[text()='{login_status_text}']")))
+            WebDriverWait(self.web_driver, 1).until( EC.presence_of_element_located((By.XPATH, f"//div[text()='{login_status_text}']")))
             return False
         except TimeoutException:
             return True
@@ -153,9 +211,17 @@ class cuaMonitor:
         self.enterSmsCode(5)
         self.clickLogin(5)
 
-    def monitorTickets(self) -> None:
+    def monitorTickets(self, departure_city, arrival_city) -> None:
         self.clickMy(5)
         self.clickBlindBox(10)
-        self.clickRedeem(10)
-        self.chooseCities(10)
+        self.clickRedeem(5)
+        self.chooseDepartureCity(departure_city, 5)
+        self.chooseArrivalCity(arrival_city, 5)
+        self.chooseDepartureTime(5)
+        
+        success = False
+        while not success:
+            success = self.tryClickArrivalTime(5)
+            time.sleep(1)
+        
     
