@@ -1,8 +1,8 @@
 import time
+from datetime import datetime
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import TimeoutException, NoSuchElementException, ElementClickInterceptedException
 from selenium.webdriver.common.by import By
 
 class cuaMonitor:
@@ -149,13 +149,16 @@ class cuaMonitor:
             print(f"ERROR:  {city} Not Found")
             exit()
 
-    def chooseDepartureTime(self, wait_time) -> None:
+    def chooseDepartureTime(self, wait_time) -> bool:
         try:
             departure = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, "//div[text()='选择去程日期']")))
             departure.click()
         except TimeoutException:
             print("ERROR:  选择去程日期 Not Found")
-            exit()
+            return False
+        except ElementClickInterceptedException:
+            print(f"[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] Error: ElementClickInterceptedException at 选择去程日期")
+            return False
 
         class_value = "css-175oi2r r-1i6wzkk r-lrvibr r-1loqt21 r-1otgn73 r-1awozwy r-1kihuf0 r-6koalj r-1777fci r-bnwqim r-pcwgik r-1xfd6ze r-uxrrfj r-2tyz2o r-jwli3a"
         try:
@@ -164,11 +167,25 @@ class cuaMonitor:
             #action.move_to_element_with_offset(departure_time, 0, -20).click().perform()
             #departure_time.click()
             self.web_driver.execute_script("arguments[0].click();", departure_time)
+            return True
         except TimeoutException:
             print("ERROR:  出发 Not Found")
+            return False
+        except ElementClickInterceptedException:
+            print(f"[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] Error: ElementClickInterceptedException at 日历-出发")
+            return False
+
+    def clickBack(self, wait_time) -> None:
+        back_class_value = "css-175oi2r r-6koalj r-eqz5dr r-eu3ka r-1777fci r-1aockid"
+        try:
+            back = WebDriverWait(self.web_driver, wait_time).until(EC.presence_of_element_located((By.XPATH, f"//div[@class='{back_class_value}']")))
+            print(back.get_attribute("outerHTML"))
+            self.web_driver.execute_script("arguments[0].click();", back)
+        except TimeoutException:
+            print("ERROR: back Not Found")
             exit()
 
-    def tryClickArrivalTime(self, wait_time) -> bool:
+    def tryClickArrivalTime(self,departure_city, arrival_city, wait_time) -> bool:
         try:
             departure = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, "//div[text()='选择返程日期']")))
             departure.click()
@@ -181,7 +198,13 @@ class cuaMonitor:
             departure_time = self.web_driver.find_element(By.XPATH, f"//div[@class='{class_value}']/div[text()='返程']")
             departure_time.click()
             return True
+        except ElementClickInterceptedException:
+            print(f"[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] Error: ElementClickInterceptedException at 日历-返程")
+            self.web_driver.refresh()
+            return False
         except NoSuchElementException:
+            print(f"[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] {departure_city}-{arrival_city} Arrival Trip is Sold Out")
+            self.web_driver.refresh()
             return False
 
     def isLogin(self) -> bool:
@@ -211,17 +234,22 @@ class cuaMonitor:
         self.enterSmsCode(5)
         self.clickLogin(5)
 
-    def monitorTickets(self, departure_city, arrival_city) -> None:
+    def monitorTickets(self, departure_city, arrival_city, refresh_time_in_sec) -> None:
         self.clickMy(5)
         self.clickBlindBox(10)
         self.clickRedeem(5)
-        self.chooseDepartureCity(departure_city, 5)
-        self.chooseArrivalCity(arrival_city, 5)
-        self.chooseDepartureTime(5)
-        
+
         success = False
         while not success:
-            success = self.tryClickArrivalTime(5)
-            time.sleep(1)
+            self.chooseDepartureCity(departure_city, 5)
+            self.chooseArrivalCity(arrival_city, 5)
+            if self.chooseDepartureTime(5):
+                success = self.tryClickArrivalTime(departure_city, arrival_city, 5)
+                
+            else:
+                success = False
+                self.web_driver.refresh()
+            time.sleep(refresh_time_in_sec)
+
         
     

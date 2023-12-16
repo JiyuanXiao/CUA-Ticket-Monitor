@@ -3,3 +3,7 @@ __pycache__/
 
 # Cookies
 cookies.pkl
+
+# Irrelevant File
+twilio_Recovery_code.txt
+elements.txt

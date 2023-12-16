@@ -35,10 +35,10 @@ monitor.clickCloseAd(50)
 
 # Check Login Status
 if monitor.isLogin():
-    monitor.monitorTickets(departure_city, arrival_city)
+    monitor.monitorTickets(departure_city, arrival_city, 5)
 else:  
     monitor.loginAccount(phone_number)
     monitor.clickCloseAd(50)
     cookies_handler.saveCookies()
-    monitor.monitorTickets(departure_city, arrival_city)
+    monitor.monitorTickets(departure_city, arrival_city, 5)
 
