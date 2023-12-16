@@ -185,7 +185,7 @@ class cuaMonitor:
             print("ERROR: back Not Found")
             exit()
 
-    def tryClickArrivalTime(self,departure_city, arrival_city, wait_time) -> bool:
+    def tryClickArrivalTime(self,departure_city, arrival_city, wait_time, refresh_time_in_sec) -> bool:
         try:
             departure = WebDriverWait(self.web_driver, wait_time).until( EC.presence_of_element_located((By.XPATH, "//div[text()='选择返程日期']")))
             departure.click()
@@ -197,14 +197,17 @@ class cuaMonitor:
         try:
             departure_time = self.web_driver.find_element(By.XPATH, f"//div[@class='{class_value}']/div[text()='返程']")
             departure_time.click()
+            print(f"[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] {departure_city}-{arrival_city} Arrival Trip Can Be Selected Right Now. SMS Notification is Sending...")
             return True
         except ElementClickInterceptedException:
             print(f"[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] Error: ElementClickInterceptedException at 日历-返程")
             self.web_driver.refresh()
+            time.sleep(2)
             return False
         except NoSuchElementException:
             print(f"[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] {departure_city}-{arrival_city} Arrival Trip is Sold Out")
             self.web_driver.refresh()
+            time.sleep(refresh_time_in_sec)
             return False
 
     def isLogin(self) -> bool:
@@ -244,12 +247,12 @@ class cuaMonitor:
             self.chooseDepartureCity(departure_city, 5)
             self.chooseArrivalCity(arrival_city, 5)
             if self.chooseDepartureTime(5):
-                success = self.tryClickArrivalTime(departure_city, arrival_city, 5)
+                success = self.tryClickArrivalTime(departure_city, arrival_city, 5, refresh_time_in_sec)
                 
             else:
                 success = False
                 self.web_driver.refresh()
-            time.sleep(refresh_time_in_sec)
+                time.sleep(2)
 
         
     

@@ -11,6 +11,7 @@ from cookies_handler import cookiesHandler
 phone_number = "13112756019"
 departure_city = "佛山"
 arrival_city = "哈尔滨"
+refresh_time_in_sec = 30
 
 cookies_file_name = "cookies.pkl"
 
@@ -35,10 +36,10 @@ monitor.clickCloseAd(50)
 
 # Check Login Status
 if monitor.isLogin():
-    monitor.monitorTickets(departure_city, arrival_city, 5)
+    monitor.monitorTickets(departure_city, arrival_city, refresh_time_in_sec)
 else:  
     monitor.loginAccount(phone_number)
     monitor.clickCloseAd(50)
     cookies_handler.saveCookies()
-    monitor.monitorTickets(departure_city, arrival_city, 5)
+    monitor.monitorTickets(departure_city, arrival_city, refresh_time_in_sec)
 
