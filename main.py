@@ -6,9 +6,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 from cua_monitor import cuaMonitor
 from cookies_handler import cookiesHandler
 
-# CUA Account phone number
-#phone_number = "13534367410"
-phone_number = "13112756019"
 departure_city = "佛山"
 arrival_city = "哈尔滨"
 refresh_time_in_sec = 30
@@ -38,7 +35,7 @@ monitor.clickCloseAd(50)
 if monitor.isLogin():
     monitor.monitorTickets(departure_city, arrival_city, refresh_time_in_sec)
 else:  
-    monitor.loginAccount(phone_number)
+    monitor.loginAccount()
     monitor.clickCloseAd(50)
     cookies_handler.saveCookies()
     monitor.monitorTickets(departure_city, arrival_city, refresh_time_in_sec)
